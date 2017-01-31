@@ -1,0 +1,181 @@
+---
+title: "Chicago, NYC, Detroit HeatMaps"
+output: html_document
+---
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+1. Chicago
+```{r}
+
+library(rgdal)
+library(ggplot2)
+library(ggmap)
+require("plyr")
+
+filePathDirectory = "FILEPATHDIRECTORY"
+setwd(filePathDirectory)
+
+intensityData2013 <- read.csv("Chicago/2013.csv", header = T, sep=",")
+intensityDF2013 <- as.data.frame(intensityData2013)
+
+intensityData2014 <- read.csv("Chicago/2014.csv", header = T, sep=",")
+intensityDF2014 <- as.data.frame(intensityData2014)
+
+intensityData2015 <- read.csv("Chicago/2015.csv", header = T, sep=",")
+intensityDF2015 <- as.data.frame(intensityData2015)
+
+
+Neighborhoods <- readOGR(dsn = 'FILEPATHDIRECTORY',
+        layer = 'geo_export_82762737-4509-4588-b797-d90024c0c50b')
+
+Neighborhoods <- spTransform(Neighborhoods, CRS("+proj=longlat +datum=WGS84"))
+
+Neighborhoods@data$id <- rownames(Neighborhoods@data)
+Neighborhoods.df <- fortify(Neighborhoods)
+Neighborhoods.df <- join(Neighborhoods.df, Neighborhoods@data, by="id")
+Neighborhoods.df <- merge(Neighborhoods.df, intensityDF2015, by.x="ward", by.y="Wards", all.x=T, a..ly=F)
+
+precinctCentres <- data.frame(precinct= numeric(0), lat_centre = numeric(0), long_centre = numeric(0))
+                            
+for(k in 1:123) {
+  
+  temp_lat2 = mean(Neighborhoods.df$lat[Neighborhoods.df$ward == k])
+  temp_lon2 = mean(Neighborhoods.df$long[Neighborhoods.df$ward == k])
+
+  newrow1 <- data.frame(precinct = k, lat_centre = temp_lat2, long_centre = temp_lon2)
+  
+  if(!is.nan(Neighborhoods.df$CrimeIntensity))
+      precinctCentres = rbind(precinctCentres, newrow1)
+}
+
+chicagoMap = map = get_map(location = "chicago" , zoom = 11, maptype = "terrain")
+ggmap(chicagoMap) + 
+    geom_polygon(aes(fill = CrimeIntensity, x = long, y = lat, group = group), 
+                 data = Neighborhoods.df,
+                 alpha = 0.8, 
+                 color = "black",
+                 size = 0.2) +  
+  scale_fill_gradient(low = "green", high = "red") + 
+   geom_text(aes(x=long_centre,y=lat_centre,label=precinct), data = precinctCentres, size=4)
+# 
+# + geom_text(aes(label = precinct, x = long, y = lat))
+
+Neighborhoods.df <- merge(Neighborhoods.df, intensityDF2014, by.x="ward", by.y="Wards", all.x=T, a..ly=F)
+
+chicagoMap = map = get_map(location = "chicago" , zoom = 11, maptype = "terrain")
+ggmap(chicagoMap) + 
+    geom_polygon(aes(fill = CrimeIntensity.y, x = long, y = lat, group = group), 
+                 data = Neighborhoods.df,
+                 alpha = 0.8, 
+                 color = "black",
+                 size = 0.2) +  
+  scale_fill_gradient(low = "green", high = "red") #+ 
+#   geom_text(aes(x=long_centre,y=lat_centre,label=precinct), data = precinctCentres, size=4)
+# 
+# + geom_text(aes(label = precinct, x = long, y = lat))
+
+Neighborhoods.df <- merge(Neighborhoods.df, intensityDF2015, by.x="ward", by.y="Wards", all.x=T, a..ly=F)
+
+chicagoMap = map = get_map(location = "chicago" , zoom = 10, maptype = "terrain")
+ggmap(chicagoMap) + 
+    geom_polygon(aes(fill = CrimeIntensity, x = long, y = lat, group = group), 
+                 data = Neighborhoods.df,
+                 alpha = 0.8, 
+                 color = "black",
+                 size = 0.2) +  
+  scale_fill_gradient(low = "green", high = "red") #+ 
+#   geom_text(aes(x=long_centre,y=lat_centre,label=precinct), data = precinctCentres, size=4)
+# 
+# + geom_text(aes(label = precinct, x = long, y = lat))
+```
+
+2. NYC
+```{r}
+intensityDataNYC <- read.csv("NewYorkCity/2015.csv", header = T, sep=",")
+intensityDFNYC <- as.data.frame(intensityDataNYC)
+
+NeighborhoodsNYC <- readOGR(dsn = 'FILEPATHDIRECTORY',
+        layer = 'geo_export_a84e2626-1425-4220-aeb9-71f49042e5d6')
+
+NeighborhoodsNYC <- spTransform(NeighborhoodsNYC, CRS("+proj=longlat +datum=WGS84"))
+
+NeighborhoodsNYC@data$id <- rownames(NeighborhoodsNYC@data)
+NeighborhoodsNYC.df <- fortify(NeighborhoodsNYC)
+NeighborhoodsNYC.df <- join(NeighborhoodsNYC.df, NeighborhoodsNYC@data, by="id")
+NeighborhoodsNYC.df <- merge(NeighborhoodsNYC.df, intensityDFNYC, by.x="precinct", by.y="Precinct", all.x=T, a..ly=F)
+
+precinctCentres <- data.frame(precinct= numeric(0), lat_centre = numeric(0), long_centre = numeric(0))
+                            
+for(k in 1:123) {
+  
+  temp_lat2 = mean(NeighborhoodsNYC.df$lat[NeighborhoodsNYC.df$precinct == k])
+  temp_lon2 = mean(NeighborhoodsNYC.df$long[NeighborhoodsNYC.df$precinct == k])
+
+  newrow1 <- data.frame(precinct = k, lat_centre = temp_lat2, long_centre = temp_lon2)
+  
+  if(!is.nan(NeighborhoodsNYC.df$CrimeIntensity))
+      precinctCentres = rbind(precinctCentres, newrow1)
+}
+
+NYCMap = map = get_map(location = "new york" , zoom = 10, maptype = "terrain")
+ggmap(NYCMap) + 
+    geom_polygon(aes(fill = CrimeIntensity, x = long, y = lat, group = group), 
+                 data = NeighborhoodsNYC.df,
+                 alpha = 0.8, 
+                 color = "black",
+                 size = 0.2) +  
+  scale_fill_gradient(low = "green", high = "red") + 
+   geom_text(aes(x=long_centre,y=lat_centre,label=precinct), data = precinctCentres, size=4)
+
+```
+
+3. Detroit
+```{r}
+intensityDataDetroit <- read.csv("Detroit/2015.csv", header = T, sep=",")
+intensityDFDetroit <- as.data.frame(intensityDataDetroit)
+
+NeighborhoodsDetroit <- readOGR(dsn = 'FILEPATHDIRECTORY',
+        layer = 'DPD_Police_Precincts')
+
+NeighborhoodsDetroit <- spTransform(NeighborhoodsDetroit, CRS("+proj=longlat +datum=WGS84"))
+
+NeighborhoodsDetroit@data$id <- rownames(NeighborhoodsDetroit@data)
+NeighborhoodsDetroit.df <- fortify(NeighborhoodsDetroit)
+NeighborhoodsDetroit.df <- join(NeighborhoodsDetroit.df, NeighborhoodsDetroit@data, by="id")
+NeighborhoodsDetroit.df <- merge(NeighborhoodsDetroit.df, intensityDFDetroit, by.x="Precinct", by.y="Precinct", all.x=T, a..ly=F)
+
+precinctCentres <- data.frame(precinct= numeric(0), lat_centre = numeric(0), long_centre = numeric(0))
+                            
+for(k in 1:123) {
+  
+  temp_lat2 = mean(NeighborhoodsDetroit.df$lat[NeighborhoodsDetroit.df$Precinct == k])
+  temp_lon2 = mean(NeighborhoodsDetroit.df$long[NeighborhoodsDetroit.df$Precinct == k])
+
+  newrow1 <- data.frame(precinct = k, lat_centre = temp_lat2, long_centre = temp_lon2)
+  
+  if(!is.nan(NeighborhoodsDetroit.df$CrimeIntensity))
+      precinctCentres = rbind(precinctCentres, newrow1)
+}
+
+DetroitMap = map = get_map(location = "Detroit" , zoom = 11, maptype = "terrain")
+ggmap(DetroitMap) + 
+    geom_polygon(aes(fill = CrimeIntensity, x = long, y = lat, group = group), 
+                 data = NeighborhoodsDetroit.df,
+                 alpha = 0.8, 
+                 color = "black",
+                 size = 0.2) +  
+  scale_fill_gradient(low = "green", high = "red") + 
+   geom_text(aes(x=long_centre,y=lat_centre,label=precinct), data = precinctCentres, size=4)
+
+```
+
+You can also embed plots, for example:
+
+```{r, echo=FALSE}
+
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

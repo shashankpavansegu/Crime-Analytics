@@ -1,0 +1,41 @@
+--NYC
+
+create external table nyc_analytics (identifier string, crimetype string, precinct int, year int, weight double) row format delimited fields terminated by '\t' location 'projectNYC/';
+
+SELECT precinct, SUM(weight) FROM nyc_analytics WHERE year = 2015 GROUP BY precinct;
+
+SELECT precinct, SUM(weight) FROM nyc_analytics WHERE year = 2014 GROUP BY precinct;
+
+SELECT precinct, SUM(weight) FROM nyc_analytics WHERE year = 2013 GROUP BY precinct;
+
+SELECT SUM(weight) FROM nyc_analytics GROUP BY year;
+
+--Chicago
+
+create external table chicago_analytics (identifier string, primarytype string, ward int, year int, weight double) row format delimited fields terminated by '\t' location 'projectChicago/';
+
+SELECT ward, SUM(weight) FROM chicago_analytics WHERE year = 2015 GROUP BY ward;
+
+SELECT ward, SUM(weight) FROM chicago_analytics WHERE year = 2014 GROUP BY ward;
+
+SELECT ward, SUM(weight) FROM chicago_analytics WHERE year = 2013 GROUP BY ward;
+
+SELECT SUM(weight) FROM chicago_analytics GROUP BY year;
+
+
+--Detroit
+
+create external table detroit_analytics (caseid string, category string, date string, precinct int, weight double) row format delimited fields terminated by '\t' location 'projectDetroit/';
+
+SELECT precinct, SUM(weight) FROM detroit_analytics WHERE year = 2015 GROUP BY precinct;
+
+SELECT precinct, SUM(weight) FROM detroit_analytics WHERE year = 2014 GROUP BY precinct;
+
+SELECT precinct, SUM(weight) FROM detroit_analytics WHERE year = 2013 GROUP BY precinct;
+
+SELECT SUM(weight) FROM detroit_analytics GROUP BY year;
+
+
+
+
+
